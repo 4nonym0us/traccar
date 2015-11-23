@@ -20,8 +20,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.traccar.Context;
 import org.traccar.model.MiscFormatter;
 import org.traccar.model.Position;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PositionServlet extends BaseServlet {
 
