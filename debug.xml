@@ -230,6 +230,13 @@
         DELETE FROM user_device WHERE userId = :userId AND deviceId = :deviceId;
     </entry>
 
+    <entry key='database.filterPositions'>
+        SELECT * FROM position WHERE deviceId = :deviceId
+        AND fixTime BETWEEN :date_from AND :date_to
+        AND speed BETWEEN :speed_from AND :speed_to
+        ORDER BY fixTime;
+    </entry>
+
     <entry key='database.selectPositions'>
         SELECT * FROM position WHERE deviceId = :deviceId AND fixTime BETWEEN :from AND :to ORDER BY fixTime;
     </entry>

@@ -21,8 +21,7 @@ import org.traccar.Context;
 import org.traccar.model.MiscFormatter;
 import org.traccar.model.Position;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PositionServlet extends BaseServlet {
 
@@ -30,6 +29,9 @@ public class PositionServlet extends BaseServlet {
     protected boolean handle(String command, HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         switch (command) {
+            case "/filter":
+                filter(req, resp);
+                break;
             case "/get":
                 get(req, resp);
                 break;
@@ -40,6 +42,45 @@ public class PositionServlet extends BaseServlet {
                 return false;
         }
         return true;
+    }
+
+    /**
+     * Method is used to find downtime points for the selected period of time for a specified device
+     * with a user-defined speed and downtime limits.
+     * Example HTTP GET request:
+     * ~/api/position/filter?deviceId=2&date_from=2015-11-13T20%3A27%3A36.000Z&date_to=2015-11-14T20%3A57%3A36.000Z&speed_from=0&speed_to=5&delay=15
+     * @param req
+     * @param resp
+     * @throws Exception
+     */
+    private void filter(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        // Retrieving GET parameters
+        long deviceId = Long.parseLong(req.getParameter("deviceId"));
+        Date date_from = JsonConverter.parseDate(req.getParameter("date_from")),
+                date_to = JsonConverter.parseDate(req.getParameter("date_to"));
+        double speed_from = Double.parseDouble(req.getParameter("speed_from")),
+                speed_to = Double.parseDouble(req.getParameter("speed_to"));
+        int downtime_limit = Integer.parseInt(req.getParameter("delay"));
+
+        // Fetching data from DB
+        Context.getPermissionsManager().checkDevice(getUserId(req), deviceId);
+        Collection<Position> temp = Context.getDataManager().getFilteredPositions(
+                getUserId(req), deviceId, date_from, date_to, speed_from, speed_to);
+        Position[] positions = temp.toArray(new Position[temp.size()]);
+
+        // Detecting downtime points
+        ArrayList<Position> resultCollection = new ArrayList<>();
+        for (int i = 1; i < positions.length; i++) {
+            // Calculating delay (in minutes) between two consecutive Positions
+            int positionDelay = (int)((positions[i].getFixTime().getTime()/60000)
+                    - (positions[i-1].getFixTime().getTime()/60000));
+
+            if (positionDelay >= downtime_limit){ // True if downtime limit exceeded
+                resultCollection.add(positions[i-1]);
+            }
+        }
+
+        sendResponse(resp.getWriter(), JsonConverter.arrayToJson(resultCollection));
     }
 
     private void get(HttpServletRequest req, HttpServletResponse resp) throws Exception {

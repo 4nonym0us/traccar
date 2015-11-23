@@ -9,6 +9,7 @@
     <entry key='web.enable'>true</entry>
     <entry key='web.port'>8082</entry>
     <entry key='web.path'>[WEB]</entry>
+    <entry key='web.origin'>http://cheetah.pro, http://gps.cheetah.pro, http://localhost</entry>
 
     <entry key='geocoder.enable'>true</entry>
     <entry key='geocoder.type'>google</entry>
@@ -199,6 +200,13 @@
 
     <entry key='database.unlinkDevice'>
         DELETE FROM user_device WHERE userId = :userId AND deviceId = :deviceId;
+    </entry>
+
+    <entry key='database.filterPositions'>
+        SELECT * FROM position WHERE deviceId = :deviceId
+        AND fixTime BETWEEN :date_from AND :date_to
+        AND speed BETWEEN :speed_from AND :speed_to
+        ORDER BY fixTime;
     </entry>
 
     <entry key='database.selectPositions'>

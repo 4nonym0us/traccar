@@ -347,6 +347,17 @@ public class DataManager implements IdentityManager {
                 .executeQuery(new Position());
     }
 
+    public Collection<Position> getFilteredPositions(long userId, long deviceId, Date date_from, Date date_to,
+                                                     double speed_from, double speed_to) throws SQLException {
+        return QueryBuilder.create(dataSource, getQuery("database.filterPositions"))
+                .setLong("deviceId", deviceId)
+                .setDate("date_from", date_from)
+                .setDate("date_to", date_to)
+                .setDouble("speed_from", speed_from)
+                .setDouble("speed_to", speed_to)
+                .executeQuery(new Position());
+    }
+
     public void addPosition(Position position) throws SQLException {
         position.setId(QueryBuilder.create(dataSource, getQuery("database.insertPosition"), true)
                 .setObject(position)
