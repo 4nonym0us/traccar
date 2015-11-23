@@ -41,6 +41,7 @@ public abstract class BaseServlet extends HttpServlet {
     public static final String ALLOW_ORIGIN_VALUE = "*";
     public static final String ALLOW_HEADERS_VALUE = "Origin, X-Requested-With, Content-Type, Accept";
     public static final String ALLOW_METHODS_VALUE = "GET, POST, PUT, DELETE";
+    public static final String ALLOW_CREDENTIALS_VALUE = "true";
     public static final String APPLICATION_JSON = "application/json";
     public static final String GET = "GET";
     public static final String POST = "POST";
@@ -55,6 +56,7 @@ public abstract class BaseServlet extends HttpServlet {
             resp.setCharacterEncoding(CharsetUtil.UTF_8.name());
             resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_HEADERS_VALUE);
             resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, ALLOW_METHODS_VALUE);
+            resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, ALLOW_CREDENTIALS_VALUE);
 
             String origin = req.getHeader(HttpHeaders.Names.ORIGIN);
             String allowed = Context.getConfig().getString("web.origin");
