@@ -2,7 +2,7 @@
 
 cd $(dirname $0)/../web
 
-SDK="../../../SDK\ext-premium-6.0.1\ext-6.0.1-trial\ext-6.0.1"
+SDK="../../ext-6.0.0"
 
 sencha compile --classpath=app.js,app,$SDK/packages/core/src,$SDK/packages/core/overrides,$SDK/classic/classic/src,$SDK/classic/classic/overrides \
        exclude -all \
