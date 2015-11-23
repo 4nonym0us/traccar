@@ -62,7 +62,7 @@ public abstract class BaseServlet extends HttpServlet {
             Log.debug("BaseServlet:62> Allowed Origin: " + allowed);        // Delete after testing.
             if (allowed == null) {
                 resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOW_ORIGIN_VALUE);
-            } else if (origin.toLowerCase().contains(allowed.toLowerCase())) {
+            } else if (allowed.toLowerCase().contains(origin.toLowerCase())) {
                 resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             }
 
