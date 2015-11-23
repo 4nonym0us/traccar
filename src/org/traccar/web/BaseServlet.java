@@ -58,16 +58,11 @@ public abstract class BaseServlet extends HttpServlet {
 
             String origin = req.getHeader(HttpHeaders.Names.ORIGIN);
             String allowed = Context.getConfig().getString("web.origin");
-            Log.debug("BaseServlet:61> Request from Origin: " + origin);    // Delete after testing.
-            Log.debug("BaseServlet:62> Allowed Origin: " + allowed);        // Delete after testing.
-            if (allowed == null) {
+            if (allowed == null || origin == null) {
                 resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOW_ORIGIN_VALUE);
-            } else if (allowed.toLowerCase().contains(origin.toLowerCase())) {
+            } else if (allowed.contains(origin)) {
                 resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             }
-
-            // Allow any Origin. For testing purposes only.
-            // resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, req.getHeader("origin"));
 
             if (!handle(getCommand(req), req, resp)) {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
