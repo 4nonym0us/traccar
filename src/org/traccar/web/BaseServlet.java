@@ -15,6 +15,7 @@
  */
 package org.traccar.web;
 
+import org.omg.CORBA.UserException;
 import org.traccar.helper.Log;
 
 import java.io.IOException;
@@ -51,7 +52,6 @@ public abstract class BaseServlet extends HttpServlet {
             resp.setCharacterEncoding(CharsetUtil.UTF_8.name());
             resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_HEADERS_VALUE);
             resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_METHODS, ALLOW_METHODS_VALUE);
-            resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, ALLOW_CREDENTIALS_VALUE);
 
             String origin = req.getHeader(HttpHeaders.Names.ORIGIN);
             String allowed = Context.getConfig().getString("web.origin");
@@ -60,6 +60,7 @@ public abstract class BaseServlet extends HttpServlet {
             } else if (allowed.contains(origin)) {
                 String originSafe = URLEncoder.encode(origin, StandardCharsets.UTF_8.name());
                 resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, originSafe);
+                resp.setHeader(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, ALLOW_CREDENTIALS_VALUE);
             }
 
             if (!handle(getCommand(req), req, resp)) {

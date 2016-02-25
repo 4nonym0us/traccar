@@ -51,7 +51,7 @@ public class PositionServlet extends BaseServlet {
      * Method is used to find downtime points for the selected period of time for a specified device
      * with a user-defined speed and downtime limits.
      * Example HTTP GET request:
-     * ~/api/position/filter?deviceId=2&date_from=2015-11-13T20%3A27%3A36.000Z&date_to=2015-11-14T20%3A57%3A36.000Z&speed_from=0&speed_to=5&delay=15
+     * ~/api/position/filter?deviceId=2&date_from=2015-11-13T20:27:36.000Z&date_to=2015-11-14T20:A57:36.000Z&speed_from=0&speed_to=5&delay=15
      * @param req
      * @param resp
      * @throws Exception
@@ -67,8 +67,8 @@ public class PositionServlet extends BaseServlet {
 
         // Fetching data from DB
         Context.getPermissionsManager().checkDevice(getUserId(req), deviceId);
-        Collection<Position> temp = Context.getDataManager().getFilteredPositions(
-                getUserId(req), deviceId, date_from, date_to, speed_from, speed_to);
+        Collection<Position> temp = Context.getDataManager()
+                .getFilteredPositions(deviceId, date_from, date_to, speed_from, speed_to);
         Position[] positions = temp.toArray(new Position[temp.size()]);
 
         // Detecting downtime points
