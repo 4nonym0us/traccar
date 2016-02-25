@@ -57,8 +57,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
             if (allowed == null) {
                 response.getHeaders().add(ACCESS_CONTROL_ALLOW_ORIGIN_KEY, ACCESS_CONTROL_ALLOW_ORIGIN_VALUE);
             } else if (allowed.contains(origin)) {
-                String originSafe = URLEncoder.encode(origin, StandardCharsets.UTF_8.name());
-                response.getHeaders().add(ACCESS_CONTROL_ALLOW_ORIGIN_KEY, originSafe);
+                response.getHeaders().add(ACCESS_CONTROL_ALLOW_ORIGIN_KEY, origin);
             }
         }
     }
