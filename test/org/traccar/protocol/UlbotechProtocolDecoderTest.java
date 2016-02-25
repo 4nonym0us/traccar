@@ -1,16 +1,23 @@
 package org.traccar.protocol;
 
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
-import org.traccar.helper.ChannelBufferTools;
+import org.traccar.ProtocolTest;
 
-public class UlbotechProtocolDecoderTest extends ProtocolDecoderTest {
+public class UlbotechProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         UlbotechProtocolDecoder decoder = new UlbotechProtocolDecoder(new UlbotechProtocol());
+
+        verifyPosition(decoder, binary(
+                "f8010103515790566431569e5fbb9d010e015ee2b906bde4a000000000009f03040a4000000404000115fe05060340173f22030711310583410c0000310d00312f834131000008040000b78c09077320290082c021100101120af8"));
+
+        verifyNothing(decoder, binary(
+                "2a545330312c33353430343330353133383934363023"));
+
+        verifyPosition(decoder, binary(
+                "f8010108679650230646339de69054010e015ee17506bde2c60000000000ac0304024000000404000009f705060390181422170711310583410c0000310d00312f834131018608040003130a100101136cf8"));
 
         verifyPosition(decoder, binary(
                 "f8010108679650230651689dc8e45b010e01194a26fbd47fa6001f003c0054030402420000040400024d7b0506037c18692212071131057f410c0ee0310d1b312f41413112ef0804000dd59fcc32f8"));

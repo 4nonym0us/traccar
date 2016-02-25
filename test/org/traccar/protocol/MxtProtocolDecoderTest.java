@@ -1,17 +1,19 @@
 package org.traccar.protocol;
 
 import java.nio.ByteOrder;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
-import org.traccar.helper.ChannelBufferTools;
 
-public class MxtProtocolDecoderTest extends ProtocolDecoderTest {
+import org.junit.Test;
+import org.traccar.ProtocolTest;
+
+public class MxtProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         MxtProtocolDecoder decoder = new MxtProtocolDecoder(new MxtProtocol());
+
+        verifyPosition(decoder, binary(ByteOrder.LITTLE_ENDIAN,
+                "01a631144c7e0008643ad2f456fb2d49747cfe4cbe0ffd002008800000001021000fd43d3f1403000000ff300000f42760001031102445a81fda04"));
 
         verifyPosition(decoder, binary(ByteOrder.LITTLE_ENDIAN,
                 "01a631361e7a00082471418b052a2c46b587ffc01ae3fd000008800000000000003345422203000000f000f00000000000ea1e04"));

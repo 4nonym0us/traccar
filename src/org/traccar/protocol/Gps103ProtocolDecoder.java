@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2015 Anton Tananaev (anton.tananaev@gmail.com)
+ * Copyright 2012 - 2016 Anton Tananaev (anton.tananaev@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
             .expression("([^,]+),")              // alarm
             .number("(dd)/?(dd)/?(dd) ?")        // local date
             .number("(dd):?(dd)(?:dd)?,")        // local time
-            .expression("[^,]*,")
+            .expression("([^,]+)?,")             // rfid
             .expression("[FL],")                 // full / low
             .groupBegin()
             .number("(dd)(dd)(dd).(d+)")         // time utc (hhmmss.sss)
@@ -67,7 +67,7 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
             .text("imei:")
             .number("(d+),")                     // imei
             .expression("[^,]+,")                // alarm
-            .number("d+,,")
+            .number("d*,,")
             .text("L,,,")
             .number("(x+),,")                    // lac
             .number("(x+),,,")                   // cid
@@ -76,6 +76,27 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
 
     private static final Pattern PATTERN_HANDSHAKE = new PatternBuilder()
             .number("##,imei:(d+),A")
+            .compile();
+
+    private static final Pattern PATTERN_OBD = new PatternBuilder()
+            .text("imei:")
+            .number("(d+),")                     // imei
+            .expression("OBD,")                  // type
+            .number("(dd)(dd)(dd)")              // date
+            .number("(dd)(dd)(dd),")             // time
+            .number("(d+),")                     // odometer
+            .number("(d+.d+)?,")                 // fuel instant
+            .number("(?:d+.d+)?,")               // fuel average
+            .number("(d+),")                     // speed
+            .number("d+,")                       // power load
+            .number("(d+.d+%),")                 // throttle
+            .number("(d+),")                     // rpm
+            .number("(d+.d+%),")                 // battery
+            .number("[^,]*,")                    // dtc 1
+            .number("[^,]*,")                    // dtc 2
+            .number("[^,]*,")                    // dtc 3
+            .number("[^,]*")                     // dtc 4
+            .any()
             .compile();
 
     @Override
@@ -90,18 +111,23 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
                 channel.write("LOAD", remoteAddress);
                 Parser handshakeParser = new Parser(PATTERN_HANDSHAKE, sentence);
                 if (handshakeParser.matches()) {
-                    identify(handshakeParser.next(), channel);
+                    identify(handshakeParser.next(), channel, remoteAddress);
                 }
             }
             return null;
         }
 
         // Send response #2
-        if (sentence.length() == 15 && Character.isDigit(sentence.charAt(0))) {
+        if (Character.isDigit(sentence.charAt(0))) {
             if (channel != null) {
                 channel.write("ON", remoteAddress);
             }
-            return null;
+            int start = sentence.indexOf("imei:");
+            if (start >= 0) {
+                sentence = sentence.substring(start);
+            } else {
+                return null;
+            }
         }
 
         Position position = new Position();
@@ -119,6 +145,31 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
 
             position.set(Event.KEY_LAC, parser.nextInt(16));
             position.set(Event.KEY_CID, parser.nextInt(16));
+
+            return position;
+
+        }
+
+        parser = new Parser(PATTERN_OBD, sentence);
+        if (parser.matches()) {
+
+            if (!identify(parser.next(), channel, remoteAddress)) {
+                return null;
+            }
+            position.setDeviceId(getDeviceId());
+
+            DateBuilder dateBuilder = new DateBuilder()
+                    .setDate(parser.nextInt(), parser.nextInt(), parser.nextInt())
+                    .setTime(parser.nextInt(), parser.nextInt(), parser.nextInt());
+
+            getLastLocation(position, dateBuilder.getDate());
+
+            position.set(Event.KEY_ODOMETER, parser.nextInt());
+            position.set(Event.KEY_FUEL, parser.next());
+            position.set(Event.KEY_OBD_SPEED, parser.next());
+            position.set(Event.KEY_THROTTLE, parser.next());
+            position.set(Event.KEY_RPM, parser.next());
+            position.set(Event.KEY_BATTERY, parser.next());
 
             return position;
 
@@ -146,6 +197,11 @@ public class Gps103ProtocolDecoder extends BaseProtocolDecoder {
 
         int localHours = parser.nextInt();
         int localMinutes = parser.nextInt();
+
+        String rfid = parser.next();
+        if (alarm.equals("rfid")) {
+            position.set(Event.KEY_RFID, rfid);
+        }
 
         String utcHours = parser.next();
         String utcMinutes = parser.next();

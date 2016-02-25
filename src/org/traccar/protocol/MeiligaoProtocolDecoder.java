@@ -54,19 +54,15 @@ public class MeiligaoProtocolDecoder extends BaseProtocolDecoder {
             .number("|(xxxx)?")                  // state
             .groupBegin()
             .number("|(xxxx),(xxxx)")            // adc
+            .number("(?:,(xxxx),(xxxx),(xxxx),(xxxx),(xxxx),(xxxx))?")
             .groupBegin()
-            .number(",(xxxx),(xxxx),(xxxx),(xxxx),(xxxx),(xxxx)")
-            .groupEnd("?")
-            .groupBegin()
-            .text("|")
-            .groupBegin()
-            .number("(x{16})")                   // cell
+            .number("|x{16}")                    // cell
             .number("|(xx)")                     // gsm
-            .number("|(x{8})|")                  // odometer
-            .number("(x{9})")                    // odometer
+            .number("|(x{8})")                   // odometer
+            .or()
+            .number("|(x{9})")                   // odometer
             .groupBegin()
             .number("|(x{5,})")                  // rfid
-            .groupEnd("?")
             .groupEnd("?")
             .groupEnd("?")
             .groupEnd("?")
@@ -94,7 +90,7 @@ public class MeiligaoProtocolDecoder extends BaseProtocolDecoder {
 
     public static final int MSG_RFID = 0x9966;
 
-    private boolean identify(ChannelBuffer buf, Channel channel) {
+    private boolean identify(ChannelBuffer buf, Channel channel, SocketAddress remoteAddress) {
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < 7; i++) {
@@ -119,11 +115,11 @@ public class MeiligaoProtocolDecoder extends BaseProtocolDecoder {
 
         // Try to recreate full IMEI number
         // Sometimes first digit is cut, so this won't work
-        if (id.length() == 14 && identify(id + Checksum.luhn(Long.parseLong(id)), channel, null, false)) {
+        if (id.length() == 14 && identify(id + Checksum.luhn(Long.parseLong(id)), channel, remoteAddress, false)) {
             return true;
         }
 
-        return identify(id, channel);
+        return identify(id, channel, remoteAddress);
     }
 
     private static void sendResponse(
@@ -206,7 +202,7 @@ public class MeiligaoProtocolDecoder extends BaseProtocolDecoder {
             buf.skipBytes(6);
         }
 
-        if (!identify(id, channel)) {
+        if (!identify(id, channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -283,15 +279,14 @@ public class MeiligaoProtocolDecoder extends BaseProtocolDecoder {
                 }
             }
 
-            position.set(Event.KEY_CID, parser.next());
-
             if (parser.hasNext()) {
                 position.set(Event.KEY_GSM, parser.nextInt(16));
             }
 
             if (parser.hasNext()) {
                 position.set(Event.KEY_ODOMETER, parser.nextInt(16));
-            } else if (parser.hasNext()) {
+            }
+            if (parser.hasNext()) {
                 position.set(Event.KEY_ODOMETER, parser.nextInt(16));
             }
 

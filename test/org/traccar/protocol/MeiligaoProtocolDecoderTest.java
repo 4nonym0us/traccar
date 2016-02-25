@@ -1,22 +1,26 @@
 package org.traccar.protocol;
 
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
-import org.traccar.helper.ChannelBufferTools;
+import org.traccar.ProtocolTest;
 
-public class MeiligaoProtocolDecoderTest extends ProtocolDecoderTest {
+public class MeiligaoProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         MeiligaoProtocolDecoder decoder = new MeiligaoProtocolDecoder(new MeiligaoProtocol());
 
+        verifyPosition(decoder, binary(
+                "24240072190820157fffff99553039343335342e3030302c412c313930372e303631392c4e2c30373235312e333235312c452c3031302e312c3138382e352c3234303231362c2c2c412a36427c302e387c36352e327c303830307c303030302c303030307c303336343838373532c73f0d0a"));
+
+        verifyPosition(decoder, binary(
+                "242400680790209818ffff99553038333235382e3030302c412c303131352e393338302c532c30333634382e313430392c452c302e30302c3331352e35352c3132303131367c302e37347c313930322e337c303430307c303030302c303030307c302e30f41b0d0a"));
+
         verifyNothing(decoder, binary(
                 "24240011671440258855405000b24d0d0a"));
 
         verifyPosition(decoder, binary(
-                        "242400706796502079108999553131333131382e3030302c412c313033372e393637382c4e2c30363132312e353637392c572c302e35342c322e34322c3330303931352c2c2c412a37307c302e37377c392e397c303030307c303030302c303161327c3030313138373132374cae0d0a"),
+                "242400706796502079108999553131333131382e3030302c412c313033372e393637382c4e2c30363132312e353637392c572c302e35342c322e34322c3330303931352c2c2c412a37307c302e37377c392e397c303030307c303030302c303161327c3030313138373132374cae0d0a"),
                 position("2015-09-30 11:31:18.000", true, 10.63280, -61.35947));
 
         verifyPosition(decoder, binary(

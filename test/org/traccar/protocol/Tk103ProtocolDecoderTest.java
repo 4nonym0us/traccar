@@ -1,14 +1,17 @@
 package org.traccar.protocol;
 
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
+import org.traccar.ProtocolTest;
 
-public class Tk103ProtocolDecoderTest extends ProtocolDecoderTest {
+public class Tk103ProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         Tk103ProtocolDecoder decoder = new Tk103ProtocolDecoder(new Tk103Protocol());
+
+        verifyPosition(decoder, text(
+                "(013612345678BO012061830A2934.0133N10627.2544E040.0080331309.6200000000L000770AD"));
 
         verifyAttributes(decoder, text(
                 "(088047194605BZ00,510,010,36e6,932c,43,36e6,766b,36,36e6,7668,32"));

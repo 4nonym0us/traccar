@@ -1,20 +1,28 @@
 package org.traccar.protocol;
 
 import java.nio.ByteOrder;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
-import org.traccar.helper.ChannelBufferTools;
 
-public class CastelProtocolDecoderTest extends ProtocolDecoderTest {
+import org.junit.Test;
+import org.traccar.ProtocolTest;
+
+public class CastelProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         CastelProtocolDecoder decoder = new CastelProtocolDecoder(new CastelProtocol());
 
-        //verifyPositions(decoder, binary(ByteOrder.LITTLE_ENDIAN,
-        //        "4040590004313030303030303030303800000000000000000040010072f53f56c25240560000000078b00900000000009c3100000000030100011900030001090b0f080106c04fe40b4037310c0060e001ff018d01e05e0d0a"));
+        verifyPosition(decoder, binary(ByteOrder.LITTLE_ENDIAN,
+                "24243f00676e6768656636313031313132393030313734002001840d0000d2deb556020602100b35360456cf09e6ebac0200000000030000000001abc10d0a"));
+
+        verifyPosition(decoder, binary(ByteOrder.LITTLE_ENDIAN,
+                "24243f00676e6768656636313031313132393030313734002001840d000000dfb556020602100b36298256cf0956ebac020000990c7f0000000001b4830d0a"));
+
+        verifyPositions(decoder, binary(ByteOrder.LITTLE_ENDIAN,
+                "4040590004313030303030303030303800000000000000000040010072f53f56c25240560000000078b00900000000009c3100000000030100011900030001090b0f080106c04fe40b4037310c0060e001ff018d01e05e0d0a"));
+
+        verifyPositions(decoder, binary(ByteOrder.LITTLE_ENDIAN,
+                "40405900043231334e5832303135303030303336000000000040010073dd735600df7356b9220000270b000000000000000000000400000000240e03000201120c0f0a19050c1e5808ca35530dd902540d9c010000e5300d0a"));
 
         verifyPositions(decoder, binary(ByteOrder.LITTLE_ENDIAN,
                 "404055000431303031313132353239393837000000000000001002C1F0695230086A529C911100000000000F890000A60500000000036301014CFF000001190A0D0539191480D60488C5721800000000BF8A640D0A"));

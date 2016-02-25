@@ -26,6 +26,7 @@ import org.jboss.netty.channel.Channel;
 import org.traccar.BaseProtocolDecoder;
 import org.traccar.helper.BitUtil;
 import org.traccar.helper.DateBuilder;
+import org.traccar.helper.UnitsConverter;
 import org.traccar.model.Event;
 import org.traccar.model.Position;
 
@@ -43,7 +44,6 @@ public class NoranProtocolDecoder extends BaseProtocolDecoder {
     public static final int MSG_SHAKE_HAND_RESPONSE = 0x8000;
     public static final int MSG_IMAGE_SIZE = 0x0200;
     public static final int MSG_IMAGE_PACKET = 0x0201;
-
 
     @Override
     protected Object decode(
@@ -74,8 +74,7 @@ public class NoranProtocolDecoder extends BaseProtocolDecoder {
             boolean newFormat = false;
             if (type == MSG_UPLOAD_POSITION && buf.readableBytes() == 48
                     || type == MSG_ALARM && buf.readableBytes() == 48
-                    || type == MSG_CONTROL_RESPONSE && buf.readableBytes() == 57
-                    || type == MSG_UPLOAD_POSITION_NEW) {
+                    || type == MSG_CONTROL_RESPONSE && buf.readableBytes() == 57) {
                 newFormat = true;
             }
 
@@ -92,10 +91,10 @@ public class NoranProtocolDecoder extends BaseProtocolDecoder {
             position.set(Event.KEY_ALARM, buf.readUnsignedByte());
 
             if (newFormat) {
-                position.setSpeed(buf.readUnsignedInt());
+                position.setSpeed(UnitsConverter.knotsFromKph(buf.readUnsignedInt()));
                 position.setCourse(buf.readFloat());
             } else {
-                position.setSpeed(buf.readUnsignedByte());
+                position.setSpeed(UnitsConverter.knotsFromKph(buf.readUnsignedByte()));
                 position.setCourse(buf.readUnsignedShort());
             }
             position.setLongitude(buf.readFloat());

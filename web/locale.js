@@ -16,9 +16,8 @@
 
 var Locale = {};
 
-Ext.Loader.setConfig({
-    disableCaching: false
-});
+Ext.Ajax.disableCaching = false;
+Ext.Loader.disableCaching = false;
 
 Locale.languages = {
     'ar': { name: 'العربية', code: 'en' },
@@ -31,6 +30,9 @@ Locale.languages = {
     'es': { name: 'Español', code: 'es' },
     'fr': { name: 'Français', code: 'fr' },
     'hu': { name: 'Magyar', code: 'hu' },
+    'id': { name: 'Bahasa Indonesia', code: 'id' },
+    'it': { name: 'Italiano', code: 'it' },
+    'ka': { name: 'ქართული', code: 'en' },
     'lt': { name: 'Lietuvių', code: 'lt' },
     'nl': { name: 'Nederlands', code: 'nl' },
     'no': { name: 'Norsk', code: 'no_NB' },
@@ -43,8 +45,10 @@ Locale.languages = {
     'sk': { name: 'Slovenčina', code: 'sk' },
     'sl': { name: 'Slovenščina', code: 'sl' },
     'sr': { name: 'Srpski', code: 'sr' },
+    'ta': { name: 'தமிழ்', code: 'en' },
     'th': { name: 'ไทย', code: 'th' },
     'uk': { name: 'Українська', code: 'ukr' },
+    'vi': { name: 'Tiếng Việt', code: 'en' },
     'zh': { name: '中文', code: 'zh_CN' }
 };
 

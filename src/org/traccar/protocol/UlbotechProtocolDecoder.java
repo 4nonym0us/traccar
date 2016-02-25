@@ -101,7 +101,10 @@ public class UlbotechProtocolDecoder extends BaseProtocolDecoder {
 
         ChannelBuffer buf = (ChannelBuffer) msg;
 
-        buf.readByte(); // header
+        if (buf.readUnsignedByte() != 0xF8) {
+            return null;
+        }
+
         buf.readUnsignedByte(); // version
         buf.readUnsignedByte(); // type
 
@@ -109,7 +112,7 @@ public class UlbotechProtocolDecoder extends BaseProtocolDecoder {
         position.setProtocol(getProtocolName());
 
         String imei = ChannelBuffers.hexDump(buf.readBytes(8)).substring(1);
-        if (!identify(imei, channel)) {
+        if (!identify(imei, channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -148,7 +151,7 @@ public class UlbotechProtocolDecoder extends BaseProtocolDecoder {
 
                 case DATA_STATUS:
                     int status = buf.readUnsignedShort();
-                    position.set(Event.KEY_IGNITION, BitUtil.check(status, 6));
+                    position.set(Event.KEY_IGNITION, BitUtil.check(status, 9));
                     position.set(Event.KEY_STATUS, status);
                     position.set(Event.KEY_ALARM, buf.readUnsignedShort());
                     break;
@@ -204,7 +207,9 @@ public class UlbotechProtocolDecoder extends BaseProtocolDecoder {
 
                 case DATA_EVENT:
                     position.set(Event.KEY_EVENT, buf.readUnsignedByte());
-                    position.set("event-mask", buf.readUnsignedInt());
+                    if (length > 1) {
+                        position.set("event-mask", buf.readUnsignedInt());
+                    }
                     break;
 
                 default:
@@ -216,6 +221,7 @@ public class UlbotechProtocolDecoder extends BaseProtocolDecoder {
         if (hasLocation) {
             return position;
         }
+
         return null;
     }
 

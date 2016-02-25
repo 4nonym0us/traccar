@@ -65,7 +65,7 @@ public class CastelProtocolDecoder extends BaseProtocolDecoder {
 
         double lat = buf.readUnsignedInt() / 3600000.0;
         double lon = buf.readUnsignedInt() / 3600000.0;
-        position.setSpeed(UnitsConverter.knotsFromKph(buf.readUnsignedShort()));
+        position.setSpeed(UnitsConverter.knotsFromCps(buf.readUnsignedShort()));
         position.setCourse(buf.readUnsignedShort() % 360);
 
         int flags = buf.readUnsignedByte();
@@ -99,6 +99,31 @@ public class CastelProtocolDecoder extends BaseProtocolDecoder {
             response.writeByte(version);
             response.writeBytes(id);
             response.writeShort(ChannelBuffers.swapShort(type));
+            if (content != null) {
+                response.writeBytes(content);
+            }
+            response.writeShort(
+                    Checksum.crc16(Checksum.CRC16_X25, response.toByteBuffer(0, response.writerIndex())));
+            response.writeByte(0x0D); response.writeByte(0x0A);
+            channel.write(response, remoteAddress);
+        }
+    }
+
+    private void sendResponse(
+            Channel channel, SocketAddress remoteAddress, ChannelBuffer id, short type) {
+
+        if (channel != null) {
+            int length = 2 + 2 + id.readableBytes() + 2 + 4 + 8 + 2 + 2;
+
+            ChannelBuffer response = ChannelBuffers.directBuffer(ByteOrder.LITTLE_ENDIAN, length);
+            response.writeByte('@'); response.writeByte('@');
+            response.writeShort(length);
+            response.writeBytes(id);
+            response.writeShort(ChannelBuffers.swapShort(type));
+            response.writeInt(0);
+            for (int i = 0; i < 8; i++) {
+                response.writeByte(0xff);
+            }
             response.writeShort(
                     Checksum.crc16(Checksum.CRC16_X25, response.toByteBuffer(0, response.writerIndex())));
             response.writeByte(0x0D); response.writeByte(0x0A);
@@ -112,9 +137,14 @@ public class CastelProtocolDecoder extends BaseProtocolDecoder {
 
         ChannelBuffer buf = (ChannelBuffer) msg;
 
-        buf.skipBytes(2); // header
+        int header = buf.readUnsignedShort();
         buf.readUnsignedShort(); // length
-        int version = buf.readUnsignedByte();
+
+        int version = -1;
+        if (header == 0x4040) {
+            version = buf.readUnsignedByte();
+        }
+
         ChannelBuffer id = buf.readBytes(20);
         int type = ChannelBuffers.swapShort(buf.readShort());
 
@@ -122,7 +152,21 @@ public class CastelProtocolDecoder extends BaseProtocolDecoder {
             return null;
         }
 
-        if (version == 4) {
+        if (version == -1) {
+
+            if (type == 0x2001) {
+
+                sendResponse(channel, remoteAddress, id, (short) 0x1001);
+
+                buf.readUnsignedInt(); // index
+                buf.readUnsignedInt(); // unix time
+                buf.readUnsignedByte();
+
+                return readPosition(buf);
+
+            }
+
+        } else if (version == 4) {
 
             if (type == MSG_SC_HEARTBEAT) {
 

@@ -103,7 +103,7 @@ public class Tk103ProtocolDecoder extends BaseProtocolDecoder {
 
         Parser parser = new Parser(PATTERN_BATTERY, sentence);
         if (parser.matches()) {
-            if (!identify(parser.next(), channel)) {
+            if (!identify(parser.next(), channel, remoteAddress)) {
                 return null;
             }
             position.setDeviceId(getDeviceId());
@@ -129,7 +129,7 @@ public class Tk103ProtocolDecoder extends BaseProtocolDecoder {
 
         parser = new Parser(PATTERN_NETWORK, sentence);
         if (parser.matches()) {
-            if (!identify(parser.next(), channel)) {
+            if (!identify(parser.next(), channel, remoteAddress)) {
                 return null;
             }
             position.setDeviceId(getDeviceId());
@@ -149,10 +149,15 @@ public class Tk103ProtocolDecoder extends BaseProtocolDecoder {
             return null;
         }
 
-        if (!identify(parser.next(), channel)) {
+        if (!identify(parser.next(), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
+
+        int alarm = sentence.indexOf("BO01");
+        if (alarm != -1) {
+            position.set(Event.KEY_ALARM, Integer.parseInt(sentence.substring(alarm + 4, alarm + 5)));
+        }
 
         DateBuilder dateBuilder = new DateBuilder();
         if (parser.next() == null) {

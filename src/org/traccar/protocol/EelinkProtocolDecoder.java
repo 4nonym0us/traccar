@@ -69,7 +69,7 @@ public class EelinkProtocolDecoder extends BaseProtocolDecoder {
 
         if (type == MSG_LOGIN) {
 
-            identify(ChannelBuffers.hexDump(buf.readBytes(8)).substring(1), channel);
+            identify(ChannelBuffers.hexDump(buf.readBytes(8)).substring(1), channel, remoteAddress);
 
         } else if (hasDeviceId()
                 && (type == MSG_GPS || type == MSG_ALARM || type == MSG_STATE || type == MSG_SMS)) {
@@ -89,7 +89,7 @@ public class EelinkProtocolDecoder extends BaseProtocolDecoder {
             position.set(Event.KEY_MCC, buf.readUnsignedShort());
             position.set(Event.KEY_MNC, buf.readUnsignedShort());
             position.set(Event.KEY_LAC, buf.readUnsignedShort());
-            position.set(Event.KEY_CID, buf.readUnsignedShort());
+            position.set(Event.KEY_CID, buf.readUnsignedMedium());
 
             position.setValid((buf.readUnsignedByte() & 0x01) != 0);
 

@@ -28,6 +28,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.traccar.BaseProtocolDecoder;
+import org.traccar.helper.DateUtil;
 import org.traccar.helper.UnitsConverter;
 import org.traccar.model.Event;
 import org.traccar.model.Position;
@@ -62,7 +63,7 @@ public class TramigoProtocolDecoder extends BaseProtocolDecoder {
         position.set(Event.KEY_INDEX, index);
         position.setValid(true);
 
-        if (!identify(String.valueOf(id), channel)) {
+        if (!identify(String.valueOf(id), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -126,7 +127,8 @@ public class TramigoProtocolDecoder extends BaseProtocolDecoder {
                 return null;
             }
             DateFormat dateFormat = new SimpleDateFormat("HH:mm MMM d yyyy", Locale.ENGLISH);
-            position.setTime(dateFormat.parse(matcher.group(1) + " " + Calendar.getInstance().get(Calendar.YEAR)));
+            position.setTime(DateUtil.correctYear(
+                    dateFormat.parse(matcher.group(1) + " " + Calendar.getInstance().get(Calendar.YEAR))));
 
             return position;
 

@@ -37,7 +37,7 @@ public class Gl100ProtocolDecoder extends BaseProtocolDecoder {
             .groupBegin()
             .number("d+,")                       // number
             .number("d,")                        // reserved / geofence id
-            .number("d")                         // reserved / geofence alert
+            .number("d+")                        // reserved / geofence alert // battery
             .or()
             .number("[^,]*")                     // calling number
             .groupEnd(",")
@@ -74,7 +74,7 @@ public class Gl100ProtocolDecoder extends BaseProtocolDecoder {
         Position position = new Position();
         position.setProtocol(getProtocolName());
 
-        if (!identify(parser.next(), channel)) {
+        if (!identify(parser.next(), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());

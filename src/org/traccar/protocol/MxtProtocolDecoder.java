@@ -46,7 +46,7 @@ public class MxtProtocolDecoder extends BaseProtocolDecoder {
         int type = buf.readUnsignedByte();
 
         String id = String.valueOf(buf.readUnsignedInt());
-        if (!identify(id, channel)) {
+        if (!identify(id, channel, remoteAddress)) {
             return null;
         }
 
@@ -114,7 +114,7 @@ public class MxtProtocolDecoder extends BaseProtocolDecoder {
             }
 
             if (BitUtil.check(infoGroups, 4)) {
-                position.set("hours", buf.readUnsignedInt());
+                position.set(Event.KEY_HOURS, buf.readUnsignedInt());
             }
 
             if (BitUtil.check(infoGroups, 5)) {

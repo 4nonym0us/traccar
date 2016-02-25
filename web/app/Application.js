@@ -20,7 +20,6 @@ Ext.define('Traccar.Application', {
 
     requires: [
         'Traccar.Style',
-        'Traccar.ErrorManager',
         'Traccar.AttributeFormatter'
     ],
 
@@ -78,24 +77,21 @@ Ext.define('Traccar.Application', {
         return this.getUser().get(key) || this.getServer().get(key) || defaultValue;
     },
 
-    getErrorHandler: function (scope, handler) {
-        return function (options, success, response) {
-            var result;
-            if (success) {
-                result = Ext.decode(response.responseText);
-                if (!result.success) {
-                    Ext.Msg.alert(Strings.errorTitle, result.error);
-                }
-                if (handler) {
-                    handler.call(scope, options, success, response);
-                }
+    showError: function (response) {
+        var data;
+        if (Ext.isString(response)) {
+            Ext.Msg.alert(Strings.errorTitle, response);
+        } else if (response.responseText) {
+            data = Ext.decode(response.responseText);
+            if (data.details) {
+                Ext.Msg.alert(Strings.errorTitle, data.details);
             } else {
-                if (response.statusText) {
-                    Ext.Msg.alert(Strings.errorTitle, response.statusText);
-                } else {
-                    Ext.Msg.alert(Strings.errorTitle, Strings.errorConnection);
-                }
+                Ext.Msg.alert(Strings.errorTitle, data.message);
             }
-        };
+        } else if (response.statusText) {
+            Ext.Msg.alert(Strings.errorTitle, response.statusText);
+        } else {
+            Ext.Msg.alert(Strings.errorTitle, Strings.errorConnection);
+        }
     }
 });

@@ -17,12 +17,7 @@ package org.traccar.model;
 
 import java.util.Date;
 
-public class Device implements Factory {
-
-    @Override
-    public Device create() {
-        return new Device();
-    }
+public class Device {
 
     private long id;
 
@@ -94,16 +89,6 @@ public class Device implements Factory {
 
     public void setPositionId(long positionId) {
         this.positionId = positionId;
-    }
-
-    private long dataId;
-
-    public long getDataId() {
-        return dataId;
-    }
-
-    public void setDataId(long dataId) {
-        this.dataId = dataId;
     }
 
 }

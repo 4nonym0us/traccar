@@ -23,17 +23,20 @@ import java.util.Map;
 import java.util.Set;
 import org.traccar.helper.Log;
 import org.traccar.model.Permission;
+import org.traccar.model.Server;
 import org.traccar.model.User;
 
 public class PermissionsManager {
 
     private final DataManager dataManager;
 
+    private Server server;
+
     private final Map<Long, User> users = new HashMap<>();
 
     private final Map<Long, Set<Long>> permissions = new HashMap<>();
 
-    private Set<Long> getNotNull(long userId) {
+    private Set<Long> getPermissions(long userId) {
         if (!permissions.containsKey(userId)) {
             permissions.put(userId, new HashSet<Long>());
         }
@@ -49,19 +52,24 @@ public class PermissionsManager {
         users.clear();
         permissions.clear();
         try {
+            server = dataManager.getServer();
             for (User user : dataManager.getUsers()) {
                 users.put(user.getId(), user);
             }
             for (Permission permission : dataManager.getPermissions()) {
-                getNotNull(permission.getUserId()).add(permission.getDeviceId());
+                getPermissions(permission.getUserId()).add(permission.getDeviceId());
             }
         } catch (SQLException error) {
             Log.warning(error);
         }
     }
 
+    public boolean isAdmin(long userId) {
+        return users.containsKey(userId) && users.get(userId).getAdmin();
+    }
+
     public void checkAdmin(long userId) throws SecurityException {
-        if (!users.containsKey(userId) || !users.get(userId).getAdmin()) {
+        if (!isAdmin(userId)) {
             throw new SecurityException("Admin access required");
         }
     }
@@ -73,12 +81,24 @@ public class PermissionsManager {
     }
 
     public Collection<Long> allowedDevices(long userId) {
-        return getNotNull(userId);
+        return getPermissions(userId);
     }
 
     public void checkDevice(long userId, long deviceId) throws SecurityException {
-        if (!getNotNull(userId).contains(deviceId)) {
+        if (!getPermissions(userId).contains(deviceId)) {
             throw new SecurityException("Device access denied");
+        }
+    }
+
+    public void checkRegistration(long userId) {
+        if (!server.getRegistration() && !isAdmin(userId)) {
+            throw new SecurityException("Registration disabled");
+        }
+    }
+
+    public void checkReadonly(long userId) {
+        if (server.getReadonly() && !isAdmin(userId)) {
+            throw new SecurityException("Readonly user");
         }
     }
 

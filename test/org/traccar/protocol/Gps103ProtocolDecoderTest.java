@@ -1,14 +1,32 @@
 package org.traccar.protocol;
 
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
+import org.traccar.ProtocolTest;
 
-public class Gps103ProtocolDecoderTest extends ProtocolDecoderTest {
+public class Gps103ProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         Gps103ProtocolDecoder decoder = new Gps103ProtocolDecoder(new Gps103Protocol());
+
+        verifyPosition(decoder, text(
+                "359769031878322imei:359769031878322,tracker,1602160718,2,F,221811.000,A,1655.2193,S,14546.6722,E,0.00,,"));
+
+        verifyNothing(decoder, text(
+                "imei:865328021049167,OBD,141118115036,,,0.0,,000,0.0%,+,0.0%,00000,,,,,"));
+
+        verifyAttributes(decoder, text(
+                "imei:359710049032874,OBD,160208152900,13555,,,45,0,24.71%,35,13.73%,1230,14.13,U1108,,,"));
+
+        verifyAttributes(decoder, text(
+                "imei:359710049064398,OBD,160101035156,17887,0.00,17.06,0,0,0.00%,0,0.00%,16383,10.82,,,,"));
+
+        verifyPosition(decoder, text(
+                "imei:868683020235846,rfid,160202091347,49121185,F,011344.000,A,0447.7273,N,07538.9934,W,0.00,0,,0,0,0.00%,,"));
+
+        verifyAttributes(decoder, text(
+                "imei:359710049075097,help me,,,L,,,113b,,558f,,,,,0,0,,,"));
 
         verifyAttributes(decoder, text(
                 "imei:359710041100000,tracker,000000000,,L,,,fa8,,c9af,,,,,0,0,0.00%,,"));

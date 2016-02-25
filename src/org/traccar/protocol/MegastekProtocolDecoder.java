@@ -99,7 +99,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
         return true;
     }
 
-    private Position decodeOld(Channel channel, String sentence) {
+    private Position decodeOld(Channel channel, SocketAddress remoteAddress, String sentence) {
 
         // Detect type
         boolean simple = sentence.charAt(3) == ',' || sentence.charAt(6) == ',';
@@ -157,7 +157,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
 
                 position.set(Event.KEY_ALARM, parser.next());
 
-                if (!identify(parser.next(), channel, null, false) && !identify(id, channel)) {
+                if (!identify(parser.next(), channel, remoteAddress, false) && !identify(id, channel, remoteAddress)) {
                     return null;
                 }
                 position.setDeviceId(getDeviceId());
@@ -182,7 +182,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
 
             } else {
 
-                if (!identify(id, channel)) {
+                if (!identify(id, channel, remoteAddress)) {
                     return null;
                 }
                 position.setDeviceId(getDeviceId());
@@ -194,7 +194,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
             Parser parser = new Parser(PATTERN_ALTERNATIVE, status);
             if (parser.matches()) {
 
-                if (!identify(id, channel)) {
+                if (!identify(id, channel, remoteAddress)) {
                     return null;
                 }
                 position.setDeviceId(getDeviceId());
@@ -222,6 +222,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
     }
 
     private static final Pattern PATTERN_NEW = new PatternBuilder()
+            .number("dddd").optional()
             .text("$MGV")
             .number("ddd,")
             .number("(d+),")                     // imei
@@ -264,7 +265,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
             .any()
             .compile();
 
-    private Position decodeNew(Channel channel, String sentence) {
+    private Position decodeNew(Channel channel, SocketAddress remoteAddress, String sentence) {
 
         Parser parser = new Parser(PATTERN_NEW, sentence);
         if (!parser.matches()) {
@@ -274,7 +275,7 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
         Position position = new Position();
         position.setProtocol(getProtocolName());
 
-        if (!identify(parser.next(), channel)) {
+        if (!identify(parser.next(), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -342,10 +343,10 @@ public class MegastekProtocolDecoder extends BaseProtocolDecoder {
 
         String sentence = (String) msg;
 
-        if (sentence.startsWith("$MG")) {
-            return decodeNew(channel, sentence);
+        if (sentence.contains("$MG")) {
+            return decodeNew(channel, remoteAddress, sentence);
         } else {
-            return decodeOld(channel, sentence);
+            return decodeOld(channel, remoteAddress, sentence);
         }
     }
 

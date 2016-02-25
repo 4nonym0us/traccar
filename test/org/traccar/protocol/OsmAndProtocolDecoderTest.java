@@ -1,15 +1,18 @@
 package org.traccar.protocol;
 
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
+import org.traccar.ProtocolTest;
 
-public class OsmAndProtocolDecoderTest extends ProtocolDecoderTest {
+public class OsmAndProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         OsmAndProtocolDecoder decoder = new OsmAndProtocolDecoder(new OsmAndProtocol());
-        
+
+        verifyPosition(decoder, request(
+                "/?id=902064&lat=42.06288&lon=-88.23412&timestamp=2016-01-27T18%3A55%3A47Z&hdop=6.0&altitude=224.0&speed=0.0"));
+
         verifyPosition(decoder, request(
                 "/?id=902064&lat=42.06288&lon=-88.23412&timestamp=1442068686579&hdop=6.0&altitude=224.0&speed=0.0"));
 

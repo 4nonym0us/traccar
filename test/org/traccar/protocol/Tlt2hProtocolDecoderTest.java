@@ -1,14 +1,18 @@
 package org.traccar.protocol;
 
 import org.junit.Test;
-import org.traccar.ProtocolDecoderTest;
+import org.traccar.ProtocolTest;
 
-public class Tlt2hProtocolDecoderTest extends ProtocolDecoderTest {
+public class Tlt2hProtocolDecoderTest extends ProtocolTest {
 
     @Test
     public void testDecode() throws Exception {
 
         Tlt2hProtocolDecoder decoder = new Tlt2hProtocolDecoder(new Tlt2hProtocol());
+
+        verifyPositions(decoder, text(
+                "#357671030108689##0000#AUTO#1\r\n",
+                "#13AE2F8F$GPRMC,211452.000,A,0017.378794,S,03603.441981,E,0.000,0,060216,,,A*68\r\n"));
 
         verifyPositions(decoder, text(
                 "#357671030946351#V500#0000#AUTO#1\r\n",

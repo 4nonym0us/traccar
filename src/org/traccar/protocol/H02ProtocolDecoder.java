@@ -70,14 +70,14 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
         position.set(Event.KEY_STATUS, status);
     }
 
-    private Position decodeBinary(ChannelBuffer buf, Channel channel) {
+    private Position decodeBinary(ChannelBuffer buf, Channel channel, SocketAddress remoteAddress) {
 
         Position position = new Position();
         position.setProtocol(getProtocolName());
 
         buf.readByte(); // marker
 
-        if (!identify(ChannelBuffers.hexDump(buf.readBytes(5)), channel)) {
+        if (!identify(ChannelBuffers.hexDump(buf.readBytes(5)), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -122,9 +122,17 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
             .any()
             .number("(dd)(dd)(dd),")             // time
             .expression("([AV])?,")              // validity
-            .number("-?(d+)-?(dd.d+),")          // latitude
+            .groupBegin()
+            .number("-(d+)-(d+.d+),")            // latitude
+            .or()
+            .number("(d+)(dd.d+),")              // latitude
+            .groupEnd()
             .expression("([NS]),")
-            .number("-?(d+)-?(dd.d+),")          // longitude
+            .groupBegin()
+            .number("-(d+)-(d+.d+),")            // longitude
+            .or()
+            .number("(d+)(dd.d+),")              // longitude
+            .groupEnd()
             .expression("([EW]),")
             .number("(d+.?d*),")                 // speed
             .number("(d+.?d*)?,")                // course
@@ -133,7 +141,7 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
             .any()
             .compile();
 
-    private Position decodeText(String sentence, Channel channel) {
+    private Position decodeText(String sentence, Channel channel, SocketAddress remoteAddress) {
 
         Parser parser = new Parser(PATTERN, sentence);
         if (!parser.matches()) {
@@ -143,7 +151,7 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
         Position position = new Position();
         position.setProtocol(getProtocolName());
 
-        if (!identify(parser.next(), channel)) {
+        if (!identify(parser.next(), channel, remoteAddress)) {
             return null;
         }
         position.setDeviceId(getDeviceId());
@@ -155,8 +163,20 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
             position.setValid(parser.next().equals("A"));
         }
 
-        position.setLatitude(parser.nextCoordinate());
-        position.setLongitude(parser.nextCoordinate());
+        if (parser.hasNext(2)) {
+            position.setLatitude(-parser.nextCoordinate());
+        }
+        if (parser.hasNext(2)) {
+            position.setLatitude(parser.nextCoordinate());
+        }
+
+        if (parser.hasNext(2)) {
+            position.setLongitude(-parser.nextCoordinate());
+        }
+        if (parser.hasNext(2)) {
+            position.setLongitude(parser.nextCoordinate());
+        }
+
         position.setSpeed(parser.nextDouble());
         position.setCourse(parser.nextDouble());
 
@@ -178,9 +198,9 @@ public class H02ProtocolDecoder extends BaseProtocolDecoder {
         // handle X mode?
 
         if (marker.equals("*")) {
-            return decodeText(buf.toString(Charset.defaultCharset()), channel);
+            return decodeText(buf.toString(Charset.defaultCharset()), channel, remoteAddress);
         } else if (marker.equals("$")) {
-            return decodeBinary(buf, channel);
+            return decodeBinary(buf, channel, remoteAddress);
         }
 
         return null;
